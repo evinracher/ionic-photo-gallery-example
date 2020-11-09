@@ -261,6 +261,24 @@ let PhotoService = class PhotoService {
             }
         });
     }
+    deletePicture(photo, position) {
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
+            // Remove this photo from the Photos reference data array
+            this.photos.splice(position, 1);
+            // Update photos array cache by overwriting the existing photo array
+            Storage.set({
+                key: this.PHOTO_STORAGE,
+                value: JSON.stringify(this.photos)
+            });
+            // delete photo file from filesystem
+            const filename = photo.filepath
+                .substr(photo.filepath.lastIndexOf('/') + 1);
+            yield Filesystem.deleteFile({
+                path: filename,
+                directory: _capacitor_core__WEBPACK_IMPORTED_MODULE_3__["FilesystemDirectory"].Data
+            });
+        });
+    }
     readAsBase64(cameraPhoto) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
             // "hybrid" will detect Cordova or Capacitor
@@ -944,16 +962,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "mrSG");
 /* harmony import */ var _raw_loader_tab2_page_html__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! raw-loader!./tab2.page.html */ "e9nj");
 /* harmony import */ var _tab2_page_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./tab2.page.scss */ "EGAO");
-/* harmony import */ var _services_photo_service__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./../services/photo.service */ "6/gD");
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/core */ "fXoL");
+/* harmony import */ var _ionic_angular__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ionic/angular */ "TEn/");
+/* harmony import */ var _services_photo_service__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./../services/photo.service */ "6/gD");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/core */ "fXoL");
+
 
 
 
 
 
 let Tab2Page = class Tab2Page {
-    constructor(photoService) {
+    constructor(photoService, actionSheetController) {
         this.photoService = photoService;
+        this.actionSheetController = actionSheetController;
     }
     addPhotoToGallery() {
         this.photoService.addNewToGallery();
@@ -963,12 +984,37 @@ let Tab2Page = class Tab2Page {
             yield this.photoService.loadSaved();
         });
     }
+    showActionSheet(photo, position) {
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
+            const actionSheet = yield this.actionSheetController.create({
+                header: 'Photos',
+                buttons: [{
+                        text: 'Delete',
+                        role: 'destructive',
+                        icon: 'trash',
+                        handler: () => {
+                            this.photoService.deletePicture(photo, position);
+                        }
+                    },
+                    {
+                        text: 'Cancel',
+                        icon: 'close',
+                        role: 'cancel',
+                        handler: () => {
+                            // Nothing to do, action sheet is automatically closed
+                        }
+                    }]
+            });
+            yield actionSheet.present();
+        });
+    }
 };
 Tab2Page.ctorParameters = () => [
-    { type: _services_photo_service__WEBPACK_IMPORTED_MODULE_3__["PhotoService"] }
+    { type: _services_photo_service__WEBPACK_IMPORTED_MODULE_4__["PhotoService"] },
+    { type: _ionic_angular__WEBPACK_IMPORTED_MODULE_3__["ActionSheetController"] }
 ];
 Tab2Page = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
-    Object(_angular_core__WEBPACK_IMPORTED_MODULE_4__["Component"])({
+    Object(_angular_core__WEBPACK_IMPORTED_MODULE_5__["Component"])({
         selector: 'app-tab2',
         template: _raw_loader_tab2_page_html__WEBPACK_IMPORTED_MODULE_1__["default"],
         styles: [_tab2_page_scss__WEBPACK_IMPORTED_MODULE_2__["default"]]
@@ -1450,7 +1496,7 @@ var Share = new SharePluginWeb();
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ("<ion-header [translucent]=\"true\">\n  <ion-toolbar>\n    <ion-title>Photo Gallery</ion-title>\n  </ion-toolbar>\n</ion-header>\n\n<ion-content [fullscreen]=\"true\">\n  <!-- IOS header -->\n  <ion-header collapse=\"condense\">\n    <ion-toolbar>\n      <ion-title size=\"large\">Photo Gallery</ion-title>\n    </ion-toolbar>\n  </ion-header>\n\n  <ion-grid>\n    <ion-row>\n      <ion-col size=\"6\" *ngFor=\"let photo of photoService.photos; index as position\">\n        <ion-img [src]=\"photo.webviewPath\"></ion-img>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n\n  <ion-fab vertical=\"bottom\" horizontal=\"center\" slot=\"fixed\">\n    <ion-fab-button (click)=\"addPhotoToGallery()\">\n      <ion-icon name=\"camera\"></ion-icon>\n    </ion-fab-button>\n  </ion-fab>\n\n</ion-content>");
+/* harmony default export */ __webpack_exports__["default"] = ("<ion-header [translucent]=\"true\">\n  <ion-toolbar>\n    <ion-title>Photo Gallery</ion-title>\n  </ion-toolbar>\n</ion-header>\n\n<ion-content [fullscreen]=\"true\">\n  <!-- IOS header -->\n  <ion-header collapse=\"condense\">\n    <ion-toolbar>\n      <ion-title size=\"large\">Photo Gallery</ion-title>\n    </ion-toolbar>\n  </ion-header>\n\n  <ion-grid>\n    <ion-row>\n      <ion-col size=\"6\" *ngFor=\"let photo of photoService.photos; index as position\">\n        <ion-img [src]=\"photo.webviewPath\" (click)=\"showActionSheet(photo, position)\"></ion-img>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n\n  <ion-fab vertical=\"bottom\" horizontal=\"center\" slot=\"fixed\">\n    <ion-fab-button (click)=\"addPhotoToGallery()\">\n      <ion-icon name=\"camera\"></ion-icon>\n    </ion-fab-button>\n  </ion-fab>\n\n</ion-content>");
 
 /***/ }),
 

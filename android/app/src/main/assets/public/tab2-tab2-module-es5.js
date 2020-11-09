@@ -664,51 +664,83 @@
             }));
           }
         }, {
-          key: "readAsBase64",
-          value: function readAsBase64(cameraPhoto) {
+          key: "deletePicture",
+          value: function deletePicture(photo, position) {
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee4() {
-              var file, response, blob;
+              var filename;
               return regeneratorRuntime.wrap(function _callee4$(_context4) {
                 while (1) {
                   switch (_context4.prev = _context4.next) {
                     case 0:
-                      if (!this.platform.is('hybrid')) {
-                        _context4.next = 7;
-                        break;
-                      }
+                      // Remove this photo from the Photos reference data array
+                      this.photos.splice(position, 1); // Update photos array cache by overwriting the existing photo array
 
-                      _context4.next = 3;
-                      return Filesystem.readFile({
-                        path: cameraPhoto.path
+                      Storage.set({
+                        key: this.PHOTO_STORAGE,
+                        value: JSON.stringify(this.photos)
+                      }); // delete photo file from filesystem
+
+                      filename = photo.filepath.substr(photo.filepath.lastIndexOf('/') + 1);
+                      _context4.next = 5;
+                      return Filesystem.deleteFile({
+                        path: filename,
+                        directory: _capacitor_core__WEBPACK_IMPORTED_MODULE_3__["FilesystemDirectory"].Data
                       });
 
-                    case 3:
-                      file = _context4.sent;
-                      return _context4.abrupt("return", file.data);
-
-                    case 7:
-                      _context4.next = 9;
-                      return fetch(cameraPhoto.webPath);
-
-                    case 9:
-                      response = _context4.sent;
-                      _context4.next = 12;
-                      return response.blob();
-
-                    case 12:
-                      blob = _context4.sent;
-                      _context4.next = 15;
-                      return this.convertBlobToBase64(blob);
-
-                    case 15:
-                      return _context4.abrupt("return", _context4.sent);
-
-                    case 16:
+                    case 5:
                     case "end":
                       return _context4.stop();
                   }
                 }
               }, _callee4, this);
+            }));
+          }
+        }, {
+          key: "readAsBase64",
+          value: function readAsBase64(cameraPhoto) {
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee5() {
+              var file, response, blob;
+              return regeneratorRuntime.wrap(function _callee5$(_context5) {
+                while (1) {
+                  switch (_context5.prev = _context5.next) {
+                    case 0:
+                      if (!this.platform.is('hybrid')) {
+                        _context5.next = 7;
+                        break;
+                      }
+
+                      _context5.next = 3;
+                      return Filesystem.readFile({
+                        path: cameraPhoto.path
+                      });
+
+                    case 3:
+                      file = _context5.sent;
+                      return _context5.abrupt("return", file.data);
+
+                    case 7:
+                      _context5.next = 9;
+                      return fetch(cameraPhoto.webPath);
+
+                    case 9:
+                      response = _context5.sent;
+                      _context5.next = 12;
+                      return response.blob();
+
+                    case 12:
+                      blob = _context5.sent;
+                      _context5.next = 15;
+                      return this.convertBlobToBase64(blob);
+
+                    case 15:
+                      return _context5.abrupt("return", _context5.sent);
+
+                    case 16:
+                    case "end":
+                      return _context5.stop();
+                  }
+                }
+              }, _callee5, this);
             }));
           }
         }]);
@@ -1813,21 +1845,28 @@
       /* harmony import */
 
 
-      var _services_photo_service__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(
+      var _ionic_angular__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(
+      /*! @ionic/angular */
+      "TEn/");
+      /* harmony import */
+
+
+      var _services_photo_service__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(
       /*! ./../services/photo.service */
       "6/gD");
       /* harmony import */
 
 
-      var _angular_core__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(
+      var _angular_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(
       /*! @angular/core */
       "fXoL");
 
       var Tab2Page = /*#__PURE__*/function () {
-        function Tab2Page(photoService) {
+        function Tab2Page(photoService, actionSheetController) {
           _classCallCheck(this, Tab2Page);
 
           this.photoService = photoService;
+          this.actionSheetController = actionSheetController;
         }
 
         _createClass(Tab2Page, [{
@@ -1838,20 +1877,63 @@
         }, {
           key: "ngOnInit",
           value: function ngOnInit() {
-            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee5() {
-              return regeneratorRuntime.wrap(function _callee5$(_context5) {
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee6() {
+              return regeneratorRuntime.wrap(function _callee6$(_context6) {
                 while (1) {
-                  switch (_context5.prev = _context5.next) {
+                  switch (_context6.prev = _context6.next) {
                     case 0:
-                      _context5.next = 2;
+                      _context6.next = 2;
                       return this.photoService.loadSaved();
 
                     case 2:
                     case "end":
-                      return _context5.stop();
+                      return _context6.stop();
                   }
                 }
-              }, _callee5, this);
+              }, _callee6, this);
+            }));
+          }
+        }, {
+          key: "showActionSheet",
+          value: function showActionSheet(photo, position) {
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee7() {
+              var _this2 = this;
+
+              var actionSheet;
+              return regeneratorRuntime.wrap(function _callee7$(_context7) {
+                while (1) {
+                  switch (_context7.prev = _context7.next) {
+                    case 0:
+                      _context7.next = 2;
+                      return this.actionSheetController.create({
+                        header: 'Photos',
+                        buttons: [{
+                          text: 'Delete',
+                          role: 'destructive',
+                          icon: 'trash',
+                          handler: function handler() {
+                            _this2.photoService.deletePicture(photo, position);
+                          }
+                        }, {
+                          text: 'Cancel',
+                          icon: 'close',
+                          role: 'cancel',
+                          handler: function handler() {// Nothing to do, action sheet is automatically closed
+                          }
+                        }]
+                      });
+
+                    case 2:
+                      actionSheet = _context7.sent;
+                      _context7.next = 5;
+                      return actionSheet.present();
+
+                    case 5:
+                    case "end":
+                      return _context7.stop();
+                  }
+                }
+              }, _callee7, this);
             }));
           }
         }]);
@@ -1861,11 +1943,13 @@
 
       Tab2Page.ctorParameters = function () {
         return [{
-          type: _services_photo_service__WEBPACK_IMPORTED_MODULE_3__["PhotoService"]
+          type: _services_photo_service__WEBPACK_IMPORTED_MODULE_4__["PhotoService"]
+        }, {
+          type: _ionic_angular__WEBPACK_IMPORTED_MODULE_3__["ActionSheetController"]
         }];
       };
 
-      Tab2Page = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([Object(_angular_core__WEBPACK_IMPORTED_MODULE_4__["Component"])({
+      Tab2Page = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([Object(_angular_core__WEBPACK_IMPORTED_MODULE_5__["Component"])({
         selector: 'app-tab2',
         template: _raw_loader_tab2_page_html__WEBPACK_IMPORTED_MODULE_1__["default"],
         styles: [_tab2_page_scss__WEBPACK_IMPORTED_MODULE_2__["default"]]
@@ -2602,7 +2686,7 @@
       /* harmony default export */
 
 
-      __webpack_exports__["default"] = "<ion-header [translucent]=\"true\">\n  <ion-toolbar>\n    <ion-title>Photo Gallery</ion-title>\n  </ion-toolbar>\n</ion-header>\n\n<ion-content [fullscreen]=\"true\">\n  <!-- IOS header -->\n  <ion-header collapse=\"condense\">\n    <ion-toolbar>\n      <ion-title size=\"large\">Photo Gallery</ion-title>\n    </ion-toolbar>\n  </ion-header>\n\n  <ion-grid>\n    <ion-row>\n      <ion-col size=\"6\" *ngFor=\"let photo of photoService.photos; index as position\">\n        <ion-img [src]=\"photo.webviewPath\"></ion-img>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n\n  <ion-fab vertical=\"bottom\" horizontal=\"center\" slot=\"fixed\">\n    <ion-fab-button (click)=\"addPhotoToGallery()\">\n      <ion-icon name=\"camera\"></ion-icon>\n    </ion-fab-button>\n  </ion-fab>\n\n</ion-content>";
+      __webpack_exports__["default"] = "<ion-header [translucent]=\"true\">\n  <ion-toolbar>\n    <ion-title>Photo Gallery</ion-title>\n  </ion-toolbar>\n</ion-header>\n\n<ion-content [fullscreen]=\"true\">\n  <!-- IOS header -->\n  <ion-header collapse=\"condense\">\n    <ion-toolbar>\n      <ion-title size=\"large\">Photo Gallery</ion-title>\n    </ion-toolbar>\n  </ion-header>\n\n  <ion-grid>\n    <ion-row>\n      <ion-col size=\"6\" *ngFor=\"let photo of photoService.photos; index as position\">\n        <ion-img [src]=\"photo.webviewPath\" (click)=\"showActionSheet(photo, position)\"></ion-img>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n\n  <ion-fab vertical=\"bottom\" horizontal=\"center\" slot=\"fixed\">\n    <ion-fab-button (click)=\"addPhotoToGallery()\">\n      <ion-icon name=\"camera\"></ion-icon>\n    </ion-fab-button>\n  </ion-fab>\n\n</ion-content>";
       /***/
     },
 
